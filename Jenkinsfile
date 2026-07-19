@@ -114,10 +114,10 @@ pipeline {
     post {
         always {
             archiveArtifacts(
-                artifacts         : 'playwright-report/**',
+                artifacts         : 'playwright-report/**, test-results/**',
                 allowEmptyArchive : true
             )
-            echo 'Playwright report archived.'
+            echo 'Playwright report and test results archived.'
         }
         success {
             echo "All tests passed for project: ${params.TEST_PROJECT}"
