@@ -6,6 +6,8 @@ pipeline {
         NODE_VERSION = '20.19.0'
         NODE_HOME    = "/var/jenkins_home/node-${NODE_VERSION}"
         PATH         = "/var/jenkins_home/node-${NODE_VERSION}/bin:${env.PATH}"
+        LT_USERNAME   = credentials('LT_USERNAME')
+        LT_ACCESS_KEY = credentials('LT_ACCESS_KEY')
     }
 
     parameters {
@@ -83,16 +85,11 @@ pipeline {
 
         stage('Run Playwright Tests') {
             steps {
-                withCredentials([
-                    string(credentialsId: 'LT_USERNAME',   variable: 'LT_USERNAME'),
-                    string(credentialsId: 'LT_ACCESS_KEY', variable: 'LT_ACCESS_KEY')
-                ]) {
-                    sh """
-                        npx playwright test \
-                            --project=${params.TEST_PROJECT} \
-                            --reporter=html
-                    """
-                }
+                sh """
+                    npx playwright test \
+                        --project=${params.TEST_PROJECT} \
+                        --reporter=html
+                """
             }
         }
 

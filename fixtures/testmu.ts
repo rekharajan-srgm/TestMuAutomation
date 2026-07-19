@@ -1,4 +1,4 @@
-import { test as base, chromium, expect } from '@playwright/test';
+import { test as base, chromium, expect, TestInfo } from '@playwright/test';
 
 const capabilities = {
   browserName: 'Chrome',
@@ -35,23 +35,18 @@ export const test = base.extend<{ page: import('@playwright/test').Page }>({
 
     try {
       await use(page);
-      await page.evaluate(
-        () => {},
-        `lambdatest_action: ${JSON.stringify({
-          action: 'setTestStatus',
-          arguments: { status: 'passed', remark: 'Test passed' },
-        })}`
-      );
-    } catch (e) {
-      await page.evaluate(
-        () => {},
-        `lambdatest_action: ${JSON.stringify({
-          action: 'setTestStatus',
-          arguments: { status: 'failed', remark: String(e) },
-        })}`
-      );
-      throw e;
     } finally {
+      // Report actual Playwright test status to TestMu AI dashboard
+      await page.evaluate(
+        (_) => {},
+        `lambdatest_action: ${JSON.stringify({
+          action: 'setTestStatus',
+          arguments: {
+            status: testInfo.status,
+            remark: testInfo.error?.message || 'OK',
+          },
+        })}`
+      );
       await browser.close();
     }
   },
