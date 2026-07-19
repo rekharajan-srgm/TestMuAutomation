@@ -25,19 +25,14 @@ export class DragDropPage extends PlaywrightWrapper {
         // }
         const slider = this.page.locator("(//input[@type='range'])[3]");
         await slider.waitFor({ state: 'visible' });
+        await slider.focus();
 
-        const box = await slider.boundingBox();
-        if (!box) throw new Error('Slider bounding box not found');
-
-        // Slider range is 0–100, current default value is 15, target is 95
-        const startX = box.x + (box.width * 15 / 100);
-        const endX   = box.x + (box.width * 95 / 100);
-        const y      = box.y + box.height / 2;
-
-        await this.page.mouse.move(startX, y);
-        await this.page.mouse.down();
-        await this.page.mouse.move(endX, y, { steps: 20 });
-        await this.page.mouse.up();
+        // Jump to max (100) with End key, then step back 5 to land exactly at 95
+        // Only 6 key presses — fast and precise, no pixel rounding issues
+        await this.page.keyboard.press('End');
+        for (let i = 0; i < 5; i++) {
+            await this.page.keyboard.press('ArrowLeft');
+        }
         await this.page.locator('#rangeSuccess').waitFor({ state: 'visible' });
         const outValue = await this.page.locator("//output[@id='rangeSuccess']").textContent();
         return outValue;
