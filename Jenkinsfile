@@ -2,7 +2,10 @@ pipeline {
     agent any
 
     environment {
-        CI = 'true'
+        CI           = 'true'
+        NODE_VERSION = '20.19.0'
+        NODE_HOME    = "/var/jenkins_home/node-${NODE_VERSION}"
+        PATH         = "/var/jenkins_home/node-${NODE_VERSION}/bin:${env.PATH}"
     }
 
     parameters {
@@ -21,6 +24,26 @@ pipeline {
             steps {
                 deleteDir()
                 echo 'Workspace cleaned.'
+            }
+        }
+
+        stage('Install Node.js') {
+            steps {
+                sh '''
+                    if [ ! -d "$NODE_HOME" ]; then
+                        echo "Downloading Node.js ${NODE_VERSION}..."
+                        curl -fsSL https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz \
+                            -o /tmp/node.tar.gz
+                        mkdir -p $NODE_HOME
+                        tar -xzf /tmp/node.tar.gz -C $NODE_HOME --strip-components=1
+                        rm /tmp/node.tar.gz
+                        echo "Node.js installed."
+                    else
+                        echo "Node.js ${NODE_VERSION} already cached."
+                    fi
+                '''
+                sh 'node --version'
+                sh 'npm --version'
             }
         }
 
