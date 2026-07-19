@@ -19,11 +19,20 @@ export class DragDropPage extends PlaywrightWrapper {
         } else {
             console.log("Element is not visible*******");
         }
-        await this.page.locator("(//input[@type='range'])[3]").focus();
+        // await this.page.locator("(//input[@type='range'])[3]").focus();
+        // for (let i = 15; i < 95; i++) {
+        //     await this.page.keyboard.press("ArrowRight");
+        // }
+        const slider = this.page.locator("(//input[@type='range'])[3]");
+        await slider.focus();
 
-        for (let i = 15; i < 95; i++) {
-            await this.page.keyboard.press("ArrowRight");
-        }
+        // Set slider value to 95 directly in the browser instead of pressing
+        // ArrowRight 80 times — avoids LambdaTest session timeout over slow network
+        await slider.evaluate((el: HTMLInputElement) => {
+            el.value = '95';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        });
         await this.page.locator('#rangeSuccess').waitFor({ state: 'visible' });
         const outValue = await this.page.locator("//output[@id='rangeSuccess']").textContent();
         return outValue;
